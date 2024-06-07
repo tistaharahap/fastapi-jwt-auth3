@@ -42,4 +42,4 @@ line-length = 120
 indent-width = 4
 
 [tool.rye.scripts]
-test = "pytest -x -vv --cov=fastapi_jwt_auth --cov-report html --cov-report json tests"
+test = "pytest -x -vv --cov=fastapi_jwt_auth --cov-report html --cov-report json --cov-report xml tests"
