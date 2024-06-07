@@ -1,13 +1,11 @@
 __all__ = ["JWTHeader", "JWTPresetClaims"]
 
 from datetime import datetime, timedelta
-from typing import Literal, Annotated, Any, ClassVar, Set
+from typing import Literal, Annotated, ClassVar, Set
 
 import pytz
-from pydantic import BaseModel, ConfigDict, model_validator, field_validator, HttpUrl
+from pydantic import BaseModel, ConfigDict, field_validator, HttpUrl
 from typing_extensions import Doc, Union, Optional
-
-from fastapi_jwt_auth.errors import JWTEncodeError
 
 
 class JWTHeader(BaseModel):
@@ -82,16 +80,6 @@ class JWTHeader(BaseModel):
             algorithms but required for asymmetric algorithms.
         """),
     ] = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, data: Any) -> Any:
-        if data.get("alg") in cls.__asymmetric_algos__:
-            if not data.get("jku"):
-                raise JWTEncodeError(f"jku is required for the {data['alg']} algorithm")
-            if not data.get("kid"):
-                raise JWTEncodeError(f"kid is required for the {data['alg']} algorithm")
-        return data
 
     @classmethod
     def factory(
@@ -168,6 +156,4 @@ class JWTPresetClaims(BaseModel):
     @field_validator("iss")
     @classmethod
     def check_iss(cls, v: str) -> str:
-        if not isinstance(v, str):
-            raise JWTEncodeError("iss must be a string")
         return v.rstrip("/")
