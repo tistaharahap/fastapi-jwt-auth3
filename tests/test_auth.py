@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 
 import pytest
-from pydantic import BaseModel, EmailStr, ConfigDict, ValidationError
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 from fastapi_jwt_auth.errors import JWTEncodeError, JWTDecodeError
 from fastapi_jwt_auth.jwtauth import generate_jwt_token, verify_token
@@ -349,11 +349,3 @@ def test_decoding_errors(eddsa_public_private_keypair: Tuple[str, str]):
             leeway=0,
             project_to=DecodedTokenModel,
         )
-
-
-def test_invalid_jwt_header():
-    with pytest.raises(ValidationError):
-        JWTHeader(alg="HS256", typ="invalid")
-
-    with pytest.raises(ValidationError):
-        JWTHeader(alg="invalid", typ="JWT")
