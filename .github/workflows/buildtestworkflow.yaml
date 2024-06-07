@@ -1,0 +1,43 @@
+name: FastAPI JWT Auth Build Test
+
+on:
+  push:
+    paths:
+      - "src/fastapi_jwt_auth/**"
+      - "tests/**"
+      - ".github/workflows/buildtestworkflow.yaml"
+
+jobs:
+  build:
+    name: Test FastAPI JWT Auth
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: ./
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: "x64"
+      - name: Install Rye
+        run: |
+          wget https://github.com/astral-sh/rye/releases/latest/download/rye-x86_64-linux.gz
+          gunzip rye-x86_64-linux.gz
+          chmod +x rye-x86_64-linux
+          sudo mv rye-x86_64-linux /usr/local/bin/rye
+      - name: Build
+        run: rye sync
+      - name: Run Tests
+        run: |
+          source .venv/bin/activate
+          rye run test
