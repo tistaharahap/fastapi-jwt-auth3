@@ -14,6 +14,8 @@ pip install fastapi-jwt-auth3
 
 This is an example single file implementation, let's name it `example.py`.
 
+In order for this example to run, I took the liberty to use the `Faker` library to generate fake data. You can install it by running `pip install faker`.
+
 ```python
 __all__ = ["app"]
 
