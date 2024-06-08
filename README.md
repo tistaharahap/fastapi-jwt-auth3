@@ -112,3 +112,43 @@ We can run the example above with `uvicorn`.
 ```bash
 uvicorn example:app --reload
 ```
+
+## Development
+
+This project uses `rye` to build, test and publish the package. More about `rye` can be found in the link below:
+
+[https://rye.astral.sh/](https://rye.astral.sh/)
+
+Please install `rye` first before continuing.
+
+### Environment Setup
+
+After `rye` is installed and available in your path, you can do the following to set up the environment:
+
+```bash
+git clone git@github.com:tistaharahap/fastapi-jwt-auth.git
+cd fastapi-jwt-auth
+rye sync
+````
+
+### Testing
+
+To run the tests, you can use the following command:
+
+```bash
+rye run test
+```
+
+When the command is run, coverage reports will be generated in these files and directory:
+
+```
+htmlcov/
+coverage.json
+coverage.xml
+```
+
+Coverage report can be viewed as an HTML file by opening `htmlcov/index.html` in your browser.
+
+In addition, coverage report is uploaded to `Codecov`, link [here](https://app.codecov.io/gh/tistaharahap/fastapi-jwt-auth). A Github action in the repository uploads the coverage report to `Codecov` automatically after successful tests.
+
+This project aims to have 100% test coverage.
