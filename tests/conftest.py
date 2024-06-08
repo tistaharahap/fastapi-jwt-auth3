@@ -10,8 +10,8 @@ from httpx import AsyncClient, ASGITransport
 from jwcrypto import jwk
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from fastapi_jwt_auth.jwtauth import KeypairGenerator, FastAPIJWTAuth, generate_jwt_token
-from fastapi_jwt_auth.models import JWTPresetClaims
+from fastapi_jwt_auth3.jwtauth import KeypairGenerator, FastAPIJWTAuth, generate_jwt_token
+from fastapi_jwt_auth3.models import JWTPresetClaims
 
 
 class DecodedTokenModel(BaseModel):

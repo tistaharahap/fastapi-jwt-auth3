@@ -1,5 +1,5 @@
 [project]
-name = "fastapi-jwt-auth"
+name = "fastapi-jwt-auth3"
 version = "0.1.0"
 description = "JWT authentication in FastAPI with ease "
 authors = [
@@ -39,11 +39,11 @@ dev-dependencies = [
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/fastapi_jwt_auth"]
+packages = ["src/fastapi_jwt_auth3"]
 
 [tool.ruff]
 line-length = 120
 indent-width = 4
 
 [tool.rye.scripts]
-test = "pytest -x -vv --cov=fastapi_jwt_auth --cov-report html --cov-report json --cov-report xml tests"
+test = "pytest -x -vv --cov=fastapi_jwt_auth3 --cov-report html --cov-report json --cov-report xml tests"

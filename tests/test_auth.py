@@ -5,9 +5,9 @@ from typing import Tuple
 import pytest
 from pydantic import BaseModel, EmailStr, ConfigDict
 
-from fastapi_jwt_auth.errors import JWTEncodeError, JWTDecodeError
-from fastapi_jwt_auth.jwtauth import generate_jwt_token, verify_token
-from fastapi_jwt_auth.models import JWTHeader, JWTPresetClaims
+from fastapi_jwt_auth3.errors import JWTEncodeError, JWTDecodeError
+from fastapi_jwt_auth3.jwtauth import generate_jwt_token, verify_token
+from fastapi_jwt_auth3.models import JWTHeader, JWTPresetClaims
 
 
 class DecodedTokenModel(BaseModel):

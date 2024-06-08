@@ -15,8 +15,8 @@ from jwcrypto import jwk
 from pydantic import BaseModel
 from typing_extensions import Doc, Type
 
-from fastapi_jwt_auth.errors import JWTEncodeError, JWTDecodeError
-from fastapi_jwt_auth.models import JWTHeader, JWTPresetClaims
+from fastapi_jwt_auth3.errors import JWTEncodeError, JWTDecodeError
+from fastapi_jwt_auth3.models import JWTHeader, JWTPresetClaims
 
 PydanticIsh = TypeVar("PydanticIsh", bound=BaseModel)
 

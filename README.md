@@ -2,6 +2,14 @@
 
 FastAPI JWT Auth is a lightweight library designed to simplify the integration of JWT authentication into FastAPI applications. By strictly adhering to FastAPI conventions, it provides a seamless and straightforward authentication setup process. The library aims for 100% test coverage.
 
+## Installing
+
+```bash
+pip install fastapi-jwt-auth3
+```
+
+**NOTE:** There are others who have written similar libraries with identical names. As an homage to the libraries that came before, I have decided to name this library `fastapi-jwt-auth3`.
+
 ## How To Use
 
 This is an example single file implementation, let's name it `example.py`.
@@ -16,10 +24,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from faker import Faker
 from jwcrypto import jwk
 from pydantic import BaseModel, ConfigDict, EmailStr
-from fastapi_jwt_auth.jwtauth import FastAPIJWTAuth, KeypairGenerator, JWTPresetClaims, generate_jwt_token
+from fastapi_jwt_auth3.jwtauth import FastAPIJWTAuth, KeypairGenerator, JWTPresetClaims, generate_jwt_token
 
 # Initialize the Faker instance to generate fake data
 fake = Faker()
+
 
 # Define the token claims to be projected to when decoding JWT tokens
 class TokenClaims(BaseModel):
@@ -39,8 +48,8 @@ class TokenClaims(BaseModel):
 class LoginIn(BaseModel):
     username: str
     password: str
-    
-    
+
+
 app = FastAPI(title="FastAPI JWT Auth Example")
 
 # For the purpose of this example, we will generate a new RSA keypair
@@ -51,7 +60,7 @@ jwk_key = jwk.JWK.from_pem(public_key.encode("utf-8"))
 public_key_id = jwk_key.get("kid")
 
 """
-    Initialize the FastAPIJWTAuth instance with an RSA algorithm. We need to provide a set of secret and public key.
+    Initialize the FastAPIJWTAuth instance with an RSA algorithm. We need to provide a set of private and public key.
 """
 jwt_auth = FastAPIJWTAuth(
     algorithm="RS256",
@@ -70,6 +79,7 @@ jwt_auth = FastAPIJWTAuth(
 @app.get("/protected")
 async def protected_route(claims: TokenClaims = Depends(jwt_auth)):
     return {"message": f"Hello, {claims.name}!"}
+
 
 @app.post("/login")
 async def login(payload: LoginIn):

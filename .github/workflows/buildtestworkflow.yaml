@@ -3,7 +3,7 @@ name: FastAPI JWT Auth Build Test
 on:
   push:
     paths:
-      - "src/fastapi_jwt_auth/**"
+      - "src/fastapi_jwt_auth3/**"
       - "tests/**"
       - ".github/workflows/buildtestworkflow.yaml"
 

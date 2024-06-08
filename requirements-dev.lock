@@ -43,7 +43,7 @@ exceptiongroup==1.2.1
     # via pytest
 faker==25.6.0
 fastapi==0.111.0
-    # via fastapi-jwt-auth
+    # via fastapi-jwt-auth3
 fastapi-cli==0.0.4
     # via fastapi
 h11==0.14.0
@@ -64,7 +64,7 @@ iniconfig==2.0.0
 jinja2==3.1.4
     # via fastapi
 jwcrypto==1.5.6
-    # via fastapi-jwt-auth
+    # via fastapi-jwt-auth3
 lsprotocol==2023.0.1
     # via pygls
     # via ruff-lsp
@@ -85,7 +85,7 @@ pycparser==2.22
     # via cffi
 pydantic==2.7.3
     # via fastapi
-    # via fastapi-jwt-auth
+    # via fastapi-jwt-auth3
 pydantic-core==2.18.4
     # via pydantic
 pygls==1.3.1
@@ -93,7 +93,7 @@ pygls==1.3.1
 pygments==2.18.0
     # via rich
 pyjwt==2.8.0
-    # via fastapi-jwt-auth
+    # via fastapi-jwt-auth3
 pytest==8.2.2
     # via pytest-asyncio
     # via pytest-cov
@@ -108,7 +108,7 @@ python-dotenv==1.0.1
 python-multipart==0.0.9
     # via fastapi
 pytz==2024.1
-    # via fastapi-jwt-auth
+    # via fastapi-jwt-auth3
 pyyaml==6.0.1
     # via uvicorn
 rich==13.7.1
