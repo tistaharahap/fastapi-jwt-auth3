@@ -171,7 +171,24 @@ def verify_token(
 class FastAPIJWTAuth:
     def __init__(
         self,
-        header: JWTHeader,
+        algorithm: Literal[
+            "HS256",
+            "HS384",
+            "HS512",
+            "RS256",
+            "RS384",
+            "RS512",
+            "ES256",
+            "ES256K",
+            "ES384",
+            "ES512",
+            "PS256",
+            "PS384",
+            "PS512",
+            "EdDSA",
+        ],
+        base_url: str,
+        public_key_id: str,
         issuer: str,
         secret_key: str,
         audience: str,
@@ -180,7 +197,7 @@ class FastAPIJWTAuth:
         public_key: Optional[str] = None,
         project_to: Optional[Type[PydanticIsh]] = None,
     ):
-        self.header = header
+        self.header = JWTHeader.factory(algorithm=algorithm, base_url=base_url, public_key_id=public_key_id)
         self.issuer = issuer
         self.secret_key = secret_key
         self.audience = audience

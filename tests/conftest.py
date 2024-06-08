@@ -11,7 +11,7 @@ from jwcrypto import jwk
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 from fastapi_jwt_auth.jwtauth import KeypairGenerator, FastAPIJWTAuth, generate_jwt_token
-from fastapi_jwt_auth.models import JWTHeader, JWTPresetClaims
+from fastapi_jwt_auth.models import JWTPresetClaims
 
 
 class DecodedTokenModel(BaseModel):
@@ -36,17 +36,13 @@ fake = Faker()
 
 
 @pytest.fixture(autouse=True)
-def jwt_auth(rsa_public_private_keypair: Tuple[str, str, str]) -> Tuple[FastAPIJWTAuth, JWTHeader, str, str]:
+def jwt_auth(rsa_public_private_keypair: Tuple[str, str, str]) -> Tuple[FastAPIJWTAuth, str, str]:
     private_key, public_key, public_key_id = rsa_public_private_keypair
 
-    jwt_header = JWTHeader.factory(
-        algorithm="RS256",
-        public_key_id=public_key_id,
-        base_url="http://testapi",
-    )
-
     jwt_auth = FastAPIJWTAuth(
-        header=jwt_header,
+        algorithm="RS256",
+        base_url="http://testapi",
+        public_key_id=public_key_id,
         issuer="http://testapi",
         secret_key=private_key,
         audience="http://testapi",
@@ -55,12 +51,12 @@ def jwt_auth(rsa_public_private_keypair: Tuple[str, str, str]) -> Tuple[FastAPIJ
         leeway=0,
         project_to=DecodedTokenModel,
     )
-    return jwt_auth, jwt_header, private_key, public_key
+    return jwt_auth, private_key, public_key
 
 
 @pytest.fixture(autouse=True)
-def app(jwt_auth: Tuple[FastAPIJWTAuth, JWTHeader, str, str]) -> FastAPI:
-    authorize, jwt_header, private_key, public_key = jwt_auth
+def app(jwt_auth: Tuple[FastAPIJWTAuth, str, str]) -> FastAPI:
+    authorize, private_key, public_key = jwt_auth
 
     app = FastAPI(title="FastAPIJWTAuth Test App")
     authorize.init_app(app=app)
@@ -79,7 +75,7 @@ def app(jwt_auth: Tuple[FastAPIJWTAuth, JWTHeader, str, str]) -> FastAPI:
         )
         claims = {"name": fake.name(), "email": fake.email()}
         token = generate_jwt_token(
-            header=jwt_header, preset_claims=preset_claims, secret_key=private_key, claims=claims
+            header=authorize.header, preset_claims=preset_claims, secret_key=private_key, claims=claims
         )
         return {"access_token": token}
 
