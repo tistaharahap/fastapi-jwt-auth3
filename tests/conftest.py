@@ -60,13 +60,13 @@ def jwt_auth(rsa_public_private_keypair: Tuple[str, str, str]) -> Tuple[FastAPIJ
 
 @pytest.fixture(autouse=True)
 def app(jwt_auth: Tuple[FastAPIJWTAuth, JWTHeader, str, str]) -> FastAPI:
-    auth, jwt_header, private_key, public_key = jwt_auth
+    authorize, jwt_header, private_key, public_key = jwt_auth
 
     app = FastAPI(title="FastAPIJWTAuth Test App")
-    auth.init_app(app=app)
+    authorize.init_app(app=app)
 
     @app.get("/test")
-    async def test(auth: DecodedTokenModel = Depends(auth)):
+    async def test(auth: DecodedTokenModel = Depends(authorize)):
         return {"message": "Hello, World!"}
 
     @app.post("/login")
