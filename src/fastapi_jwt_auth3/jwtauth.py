@@ -2,7 +2,7 @@ __all__ = ["generate_jwt_token", "verify_token", "KeypairGenerator"]
 
 import uuid
 from datetime import datetime
-from typing import Annotated, Dict, Any, Literal, Iterable, Tuple, TypeVar, Optional, Union
+from typing import Annotated, Dict, Any, Literal, Iterable, Tuple, TypeVar, Optional, Union, List
 
 import jwt
 import pytz
@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurve
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwcrypto import jwk
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing_extensions import Doc, Type
 
 from fastapi_jwt_auth3.errors import JWTEncodeError, JWTDecodeError
@@ -168,6 +168,23 @@ def verify_token(
     return verified
 
 
+class JWKSKey(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kty: str
+    use: str
+    kid: str
+    alg: str
+    n: str
+    e: str
+    x5c: Optional[List[str]] = None
+    x5t: Optional[str] = None
+
+
+class JWKSKeysOut(BaseModel):
+    keys: List[JWKSKey]
+
+
 class FastAPIJWTAuth:
     def __init__(
         self,
@@ -212,15 +229,17 @@ class FastAPIJWTAuth:
 
     def add_jwks_route(self):
         @self.app.get(
-            "/.well-known/jwks.json", response_model=Dict[str, Any], status_code=200, summary="JSON Web Key Set"
+            "/.well-known/jwks.json", response_model=JWKSKeysOut, status_code=200, summary="JSON Web Key Set"
         )
         async def jwks_route():
             return self.jwks
 
     @property
-    def jwks(self) -> str:
+    def jwks(self) -> JWKSKeysOut:
         key = jwk.JWK.from_pem(self.public_key.encode("utf-8"))
-        return key.export_public(as_dict=True)
+        exported = key.export_public(as_dict=True)
+        exported.update({"use": "sig", "alg": self.header.alg})
+        return JWKSKeysOut(**{"keys": [exported]})
 
     def __call__(
         self, creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
