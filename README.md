@@ -77,6 +77,15 @@ jwt_auth = FastAPIJWTAuth(
     project_to=TokenClaims,
 )
 
+"""
+    Initialize the FastAPIJWTAuth instance with a FastAPI app. This will add a route at:
+    
+    [GET] /.well-known/jwks.json
+    
+    This route will return the public key in JWK format for consumers to verify the JWT token.
+"""
+jwt_auth.init_app(app)
+
 
 @app.get("/protected")
 async def protected_route(claims: TokenClaims = Depends(jwt_auth)):
