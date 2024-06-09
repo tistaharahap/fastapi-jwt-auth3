@@ -157,7 +157,7 @@ def verify_token(
     """
     try:
         verified = jwt.decode(
-            token, key, verify=True, audience=audience, issuer=issuer, leeway=leeway, algorithms=[algorithm]
+            token, key, verify=True, audience=str(audience), issuer=str(issuer), leeway=leeway, algorithms=[algorithm]
         )
     except jwt.PyJWTError as exc:
         raise JWTDecodeError(f"Error decoding JWT token: {exc}")
@@ -214,10 +214,10 @@ class FastAPIJWTAuth:
         public_key: Optional[str] = None,
         project_to: Optional[Type[PydanticIsh]] = None,
     ):
-        self.header = JWTHeader.factory(algorithm=algorithm, base_url=base_url, public_key_id=public_key_id)
-        self.issuer = issuer
+        self.header = JWTHeader.factory(algorithm=algorithm, base_url=str(base_url), public_key_id=public_key_id)
+        self.issuer = str(issuer)
         self.secret_key = secret_key
-        self.audience = audience
+        self.audience = str(audience)
         self.expiry = expiry
         self.leeway = leeway
         self.public_key = public_key
@@ -228,9 +228,7 @@ class FastAPIJWTAuth:
         self.add_jwks_route()
 
     def add_jwks_route(self):
-        @self.app.get(
-            "/.well-known/jwks.json", response_model=JWKSKeysOut, status_code=200, summary="JSON Web Key Set"
-        )
+        @self.app.get("/.well-known/jwks.json", response_model=JWKSKeysOut, status_code=200, summary="JSON Web Key Set")
         async def jwks_route():
             return self.jwks
 
