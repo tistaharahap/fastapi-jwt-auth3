@@ -157,3 +157,8 @@ class JWTPresetClaims(BaseModel):
     @classmethod
     def check_iss(cls, v: str) -> str:
         return v.rstrip("/")
+
+    @field_validator("aud")
+    @classmethod
+    def check_aud(cls, v: str) -> str:
+        return v.rstrip("/")
