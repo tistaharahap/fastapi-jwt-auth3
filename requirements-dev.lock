@@ -131,6 +131,7 @@ tomli==2.0.1
     # via pytest
 typer==0.12.3
     # via fastapi-cli
+    # via fastapi-jwt-auth3
 typing-extensions==4.12.1
     # via anyio
     # via cattrs

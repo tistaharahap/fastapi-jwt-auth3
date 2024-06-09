@@ -17,3 +17,7 @@ coverage.xml
 
 # pycharm
 .idea/**
+
+# keys
+*.pem
+secret_key.txt

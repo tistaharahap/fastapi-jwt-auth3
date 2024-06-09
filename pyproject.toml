@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-jwt-auth3"
-version = "0.1.7"
+version = "0.2.0"
 description = "JWT authentication in FastAPI with ease "
 authors = [
     { name = "Batista Harahap", email = "batista@bango29.com" }
@@ -11,6 +11,7 @@ dependencies = [
     "pyjwt>=2.8.0",
     "jwcrypto>=1.5.6",
     "pytz>=2024.1",
+    "typer>=0.12.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.9"
@@ -47,3 +48,6 @@ indent-width = 4
 
 [tool.rye.scripts]
 test = "pytest -x -vv --cov=fastapi_jwt_auth3 --cov-report html --cov-report json --cov-report xml tests"
+
+[project.scripts]
+keygen = "fastapi_jwt_auth3.cli:app"

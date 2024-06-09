@@ -113,6 +113,29 @@ We can run the example above with `uvicorn`.
 uvicorn example:app --reload
 ```
 
+## Generating Keys
+
+The library comes with a CLI tool called `keygen` to help you create keys for your application.
+
+![Keygen Help](images/keygen-help.gif)
+
+To generate a new RSA keypair, you can run the following command:
+
+```bash
+keygen --algorithm=RS256
+```
+
+The private/public keys will be saved at the current working directory with the following filenames:
+
+```
+private_key.pem
+public_key.pem
+```
+
+For a list of the available algorithms supported, you can go here:
+
+[https://pyjwt.readthedocs.io/en/stable/algorithms.html](https://pyjwt.readthedocs.io/en/stable/algorithms.html)
+
 ## Development
 
 This project uses `rye` to build, test and publish the package. More about `rye` can be found in the link below:
