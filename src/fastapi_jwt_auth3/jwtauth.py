@@ -157,7 +157,13 @@ def verify_token(
     """
     try:
         verified = jwt.decode(
-            token, key, verify=True, audience=str(audience), issuer=str(issuer), leeway=leeway, algorithms=[algorithm]
+            token,
+            key,
+            verify=True,
+            audience=str(audience).rstrip("/"),
+            issuer=str(issuer).rstrip("/"),
+            leeway=leeway,
+            algorithms=[algorithm],
         )
     except jwt.PyJWTError as exc:
         raise JWTDecodeError(f"Error decoding JWT token: {exc}")
