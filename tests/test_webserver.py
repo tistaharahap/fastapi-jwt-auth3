@@ -3,7 +3,7 @@ from typing import Tuple
 import pytest
 from httpx import AsyncClient
 
-from fastapi_jwt_auth3.jwtauth import JWKSKeysOut, FastAPIJWTAuth
+from fastapi_jwt_auth3.jwtauth import JWKSKeysOut, FastAPIJWTAuth, verify_token
 
 
 @pytest.mark.asyncio
@@ -24,8 +24,48 @@ async def test_webserver_auth(client: AsyncClient, jwt_auth: Tuple[FastAPIJWTAut
 
     token_response = response.json()
     access_token = token_response.get("access_token")
+    refresh_token = token_response.get("refresh_token")
 
     assert access_token is not None
+    assert refresh_token is not None
+
+    verified_access_token = verify_token(
+        token=access_token,
+        key=auth.secret_key if auth.header.alg in ["HS256", "HS384", "HS512"] else auth.public_key,
+        algorithm=auth.header.alg,
+        audience=auth.audience,
+        issuer=auth.issuer,
+        leeway=auth.leeway,
+        project_to=None,
+    )
+
+    assert verified_access_token.get("iss") == auth.issuer
+    assert verified_access_token.get("aud") == auth.audience
+    assert verified_access_token.get("sub") is not None
+    assert verified_access_token.get("exp") is not None
+    assert verified_access_token.get("iat") is not None
+    assert verified_access_token.get("jti") is not None
+    assert verified_access_token.get("name") is not None
+    assert verified_access_token.get("email") is not None
+
+    verified_refresh_token = verify_token(
+        token=refresh_token,
+        key=auth.secret_key if auth.header.alg in ["HS256", "HS384", "HS512"] else auth.public_key,
+        algorithm=auth.header.alg,
+        audience=auth.audience,
+        issuer=auth.issuer,
+        leeway=auth.leeway,
+        project_to=None,
+    )
+
+    assert verified_refresh_token.get("iss") == auth.issuer
+    assert verified_refresh_token.get("aud") == auth.audience
+    assert verified_refresh_token.get("sub") == verified_access_token.get("sub")
+    assert verified_refresh_token.get("exp") is not None
+    assert verified_refresh_token.get("iat") is not None
+    assert verified_refresh_token.get("jti") is not None
+    assert verified_refresh_token.get("access_token_jti") == verified_access_token.get("jti")
+    assert verified_refresh_token.get("access_token_iat") == verified_access_token.get("iat")
 
     headers = {"authorization": f"Bearer {access_token}"}
     response = await client.get("/test", headers=headers)

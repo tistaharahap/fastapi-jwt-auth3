@@ -216,6 +216,7 @@ class FastAPIJWTAuth:
         secret_key: str,
         audience: str,
         expiry: int = 0,
+        refresh_token_expiry: int = 0,
         leeway: int = 0,
         public_key: Optional[str] = None,
         project_to: Optional[Type[PydanticIsh]] = None,
@@ -225,6 +226,7 @@ class FastAPIJWTAuth:
         self.secret_key = secret_key
         self.audience = str(audience)
         self.expiry = expiry
+        self.refresh_token_expiry = refresh_token_expiry
         self.leeway = leeway
         self.public_key = public_key
         self.project_to = project_to
@@ -244,6 +246,30 @@ class FastAPIJWTAuth:
         exported = key.export_public(as_dict=True)
         exported.update({"use": "sig", "alg": self.header.alg})
         return JWKSKeysOut(**{"keys": [exported]})
+
+    def generate_refresh_token(self, access_token: str) -> str:
+        verified = verify_token(
+            token=access_token,
+            key=self.secret_key if self.header.alg in JWTHeader.__symmetric_algos__ else self.public_key,
+            algorithm=self.header.alg,
+            audience=self.audience,
+            issuer=self.issuer,
+            leeway=self.leeway,
+            project_to=None,
+        )
+        refresh_token_claims = {"access_token_jti": verified.get("jti"), "access_token_iat": verified.get("iat")}
+        refresh_token = generate_jwt_token(
+            header=self.header,
+            preset_claims=JWTPresetClaims.factory(
+                issuer=self.issuer,
+                audience=self.audience,
+                expiry=self.refresh_token_expiry,
+                subject=verified.get("sub"),
+            ),
+            secret_key=self.secret_key,
+            claims=refresh_token_claims,
+        )
+        return refresh_token
 
     def __call__(
         self, creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))

@@ -47,7 +47,8 @@ def jwt_auth(rsa_public_private_keypair: Tuple[str, str, str]) -> Tuple[FastAPIJ
         secret_key=private_key,
         audience="http://testapi",
         public_key=public_key,
-        expiry=3600,
+        expiry=60 * 15,
+        refresh_token_expiry=60 * 60 * 24 * 7,
         leeway=0,
         project_to=DecodedTokenModel,
     )
@@ -77,7 +78,8 @@ def app(jwt_auth: Tuple[FastAPIJWTAuth, str, str]) -> FastAPI:
         token = generate_jwt_token(
             header=authorize.header, preset_claims=preset_claims, secret_key=private_key, claims=claims
         )
-        return {"access_token": token}
+        refresh_token = authorize.generate_refresh_token(access_token=token)
+        return {"access_token": token, "refresh_token": refresh_token}
 
     return app
 

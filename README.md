@@ -72,7 +72,8 @@ jwt_auth = FastAPIJWTAuth(
     public_key_id=public_key_id,
     issuer="https://localhost:8000",
     audience="https://localhost:8000",
-    expiry=60 * 60 * 24 * 7,
+    expiry=60 * 15,
+    refresh_token_expiry=60 * 60 * 24 * 7,
     leeway=0,
     project_to=TokenClaims,
 )
@@ -104,14 +105,39 @@ async def login(payload: LoginIn):
     token = generate_jwt_token(
         header=jwt_auth.header, secret_key=jwt_auth.secret_key, preset_claims=preset_claims, claims=claims
     )
-    return {"access_token": token}
+    
+    # This is optional but good practice
+    refresh_token = jwt_auth.generate_refresh_token(access_token=token)
+    
+    return {"access_token": token, "refresh_token": refresh_token}
 ```
 
-We can run the example above with `uvicorn`.
+We can run the example above with `uvicorn`. You can install with `pip install uvicorn`.
 
 ```bash
 uvicorn example:app --reload
 ```
+
+### Handling Refresh Tokens
+
+As you can see in the examples above, you can optionally use a `refresh_token`. What this library does not cover is the handling of the `refresh_token`. You can implement your own logic to handle the refresh token. In terms of best practice, it's prudent to set a short expiry time for the `access_token` like 15 minutes and a longer expiry time for the `refresh_token` like 7 days.
+
+Every `refresh_token` issued by the library will have the following claims attributed to it based on the access token. An example is below:
+
+```json
+{
+  "iss": "https://localhost:8000",
+  "aud": "https://localhost:8000",
+  "exp": 1719100800,
+  "kid": "U790ZCw3aTvd3Z-Nzm5z2CdW7QFjlGk-HchE3EXhfR8",
+  "jku": "http://localhost:8000/.well-known/jwks.json",
+  "sub": "cbb6aa8b-a602-43fa-a578-76db183e3b2b",
+  "access_token_jti": "84db4b73-df2a-4690-802c-3c55247a6631",
+  "access_token_iat": 1717933045
+}
+```
+
+Refresh token claims will always have the `access_token_jti` and `access_token_iat` claims. These claims are used to verify the integrity of the access token. If the access token is revoked, the refresh token will be invalidated when you set it up as such with your own logic.
 
 ## Generating Keys
 

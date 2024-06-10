@@ -149,9 +149,8 @@ class JWTPresetClaims(BaseModel):
     @classmethod
     def factory(cls, issuer: str, expiry: int, audience: str, subject: str) -> "JWTPresetClaims":
         aud = str(audience) if audience else None
-        now = datetime.now(tz=pytz.UTC)
-        later = int((now + timedelta(seconds=expiry)).timestamp())
-        return cls(iss=str(issuer), aud=aud, sub=subject, exp=later)
+        exp = datetime.now(tz=pytz.UTC) + timedelta(seconds=expiry)
+        return cls(iss=str(issuer), aud=aud, sub=subject, exp=int(exp.timestamp()))
 
     @field_validator("iss")
     @classmethod
