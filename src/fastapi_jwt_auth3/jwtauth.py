@@ -342,12 +342,27 @@ class FastAPIJWTAuth:
 
     @property
     def jwks(self) -> JWKSKeysOut:
+        """
+        Generate a JSON Web Key Set (JWKS) for the public key.
+
+        Returns:
+        JWKSKeysOut: The JSON Web Key Set.
+        """
         key = jwk.JWK.from_pem(self.public_key.encode("utf-8"))
         exported = key.export_public(as_dict=True)
         exported.update({"use": "sig", "alg": self.header.alg})
         return JWKSKeysOut(**{"keys": [exported]})
 
     def generate_refresh_token(self, access_token: str) -> str:
+        """
+        Generate a refresh token based on an access token.
+
+        Parameters:
+        access_token (str): A JWT token.
+
+        Returns:
+        str: The refresh token.
+        """
         verified = verify_token(
             token=access_token,
             key=self.secret_key if self.header.alg in JWTHeader.__symmetric_algos__ else self.public_key,
@@ -371,9 +386,19 @@ class FastAPIJWTAuth:
         )
         return refresh_token
 
-    def __call__(
+    def verify_token(
         self, creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
     ) -> Union[Dict[str, Any], PydanticIsh]:
+        """
+        Verify a JWT token.
+
+        Parameters:
+        creds (Optional[HTTPAuthorizationCredentials]): The HTTPAuthorizationCredentials instance from FastAPI's
+        HTTPBearer.
+
+        Returns:
+        Union[Dict[str, Any], PydanticIsh]: The decoded payload of the JWT token as a dictionary or Pydantic model.
+        """
         token = creds.credentials if creds else None
         if not token:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -393,6 +418,21 @@ class FastAPIJWTAuth:
             raise HTTPException(status_code=401, detail="Invalid token")
 
         return verified
+
+    def __call__(
+        self, creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
+    ) -> Union[Dict[str, Any], PydanticIsh]:
+        """
+        Called when the instance is called as a function as a FastAPI dependency. This is used to verify a JWT token.
+
+        Parameters:
+        creds (Optional[HTTPAuthorizationCredentials]): The HTTPAuthorizationCredentials instance from FastAPI's
+        HTTPBearer.
+
+        Returns:
+        Union[Dict[str, Any], PydanticIsh]: The decoded payload of the JWT token as a dictionary or Pydantic model.
+        """
+        return self.verify_token(creds=creds)
 
 
 class KeypairGenerator:
