@@ -1,4 +1,4 @@
-__all__ = ["generate_jwt_token", "verify_token", "KeypairGenerator", "FastAPIJWTAuth"]
+__all__ = ["generate_jwt_token", "verify_token", "KeypairGenerator", "FastAPIJWTAuth", "JWKSKey", "JWKSKeysOut"]
 
 import uuid
 from datetime import datetime
