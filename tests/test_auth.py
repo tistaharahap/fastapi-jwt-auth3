@@ -6,7 +6,7 @@ import pytest
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 from fastapi_jwt_auth3.errors import JWTEncodeError, JWTDecodeError
-from fastapi_jwt_auth3.jwtauth import generate_jwt_token, verify_token
+from fastapi_jwt_auth3.jwtauth import generate_jwt_token, verify_token, generate_jwk_set
 from fastapi_jwt_auth3.models import JWTHeader, JWTPresetClaims
 
 
@@ -349,3 +349,8 @@ def test_decoding_errors(eddsa_public_private_keypair: Tuple[str, str]):
             leeway=0,
             project_to=DecodedTokenModel,
         )
+
+
+def test_generating_jwk_with_empty_list():
+    with pytest.raises(ValueError):
+        generate_jwk_set(jwt_auths=[])
