@@ -1,4 +1,4 @@
-__all__ = ["generate_jwt_token", "verify_token", "KeypairGenerator"]
+__all__ = ["generate_jwt_token", "verify_token", "KeypairGenerator", "FastAPIJWTAuth"]
 
 import uuid
 from datetime import datetime
@@ -177,49 +177,149 @@ def verify_token(
 class JWKSKey(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    kty: str
-    use: str
-    kid: str
-    alg: str
-    n: str
-    e: str
-    x5c: Optional[List[str]] = None
-    x5t: Optional[str] = None
+    kty: Annotated[
+        str,
+        Doc("""
+            Cryptographic algorithm family. This is a string value.
+        """)
+    ]
+    use: Annotated[
+        str,
+        Doc("""
+            The intended use `sig` is the usual value to represent signature. This is a string value.
+        """)
+    ]
+    kid: Annotated[
+        str,
+        Doc("""
+            The unique identifier of the key. This is a string value.
+        """)
+    ]
+    alg: Annotated[
+        str,
+        Doc("""
+            The algorithm intended for use with the key. This is a string value.
+        """)
+    ]
+    n: Annotated[
+        str,
+        Doc("""
+            The RSA modulus for RSA algorithms. This is a string value.
+        """)
+    ]
+    e: Annotated[
+        str,
+        Doc("""
+            The RSA public exponent for RSA algorithms. This is a string value.
+        """)
+    ]
+    x5c: Annotated[
+        Optional[List[str]],
+        Doc("""
+            The X.509 certificate chain for the key. This is an optional field.
+        """)
+    ] = None
+    x5t: Annotated[
+        Optional[str],
+        Doc("""
+            The thumbprint of the X.509 certificate. This is an optional field.
+        """)
+    ] = None
 
 
 class JWKSKeysOut(BaseModel):
-    keys: List[JWKSKey]
+    keys: Annotated[
+        List[JWKSKey],
+        Doc("""
+            The list of keys in the JSON Web Key Set. This is a list of `JWKSKey` instances.
+        """)
+    ]
 
 
 class FastAPIJWTAuth:
     def __init__(
         self,
-        algorithm: Literal[
-            "HS256",
-            "HS384",
-            "HS512",
-            "RS256",
-            "RS384",
-            "RS512",
-            "ES256",
-            "ES256K",
-            "ES384",
-            "ES512",
-            "PS256",
-            "PS384",
-            "PS512",
-            "EdDSA",
+        algorithm: Annotated[
+            Literal[
+                "HS256",
+                "HS384",
+                "HS512",
+                "RS256",
+                "RS384",
+                "RS512",
+                "ES256",
+                "ES256K",
+                "ES384",
+                "ES512",
+                "PS256",
+                "PS384",
+                "PS512",
+                "EdDSA",
+            ],
+            Doc("""
+                The algorithm to use for signing the JWT token. This is a string value.
+            """)
         ],
-        base_url: str,
-        public_key_id: str,
-        issuer: str,
-        secret_key: str,
-        audience: str,
-        expiry: int = 0,
-        refresh_token_expiry: int = 0,
-        leeway: int = 0,
-        public_key: Optional[str] = None,
-        project_to: Optional[Type[PydanticIsh]] = None,
+        base_url: Annotated[
+            str,
+            Doc("""
+                The base URL of the application. This is a string value.
+            """)
+        ],
+        public_key_id: Annotated[
+            str,
+            Doc("""
+                The public key identifier. This is a string value.
+            """)
+        ],
+        issuer: Annotated[
+            str,
+            Doc("""
+                The issuer of the JWT token. This is a string value.
+            """)
+        ],
+        secret_key: Annotated[
+            str,
+            Doc("""
+                The secret key used to sign the JWT token. This is a string value.
+            """)
+        ],
+        audience: Annotated[
+            str,
+            Doc("""
+                The audience of the JWT token. This is a string value.
+            """)
+        ],
+        expiry: Annotated[
+            int,
+            Doc("""
+                The expiry time of the JWT token in seconds. This is an integer value.
+            """)
+        ] = 0,
+        refresh_token_expiry: Annotated[
+            int,
+            Doc("""
+                The expiry time of the refresh token in seconds. This is an integer value.
+            """)
+        ] = 0,
+        leeway: Annotated[
+            int,
+            Doc("""
+                The leeway time in seconds. This is used to counter clock skew. Defaults to 0. This is an integer value.
+            """)
+        ] = 0,
+        public_key: Annotated[
+            Optional[str],
+            Doc("""
+                The public key used to verify the JWT token. This is a string value.
+            """)
+        ] = None,
+        project_to: Annotated[
+            Optional[Type[PydanticIsh]],
+            Doc("""
+                The Pydantic model to project the decoded payload to. This is an optional field.
+            """)
+        ] = None,
     ):
         self.header = JWTHeader.factory(algorithm=algorithm, base_url=str(base_url), public_key_id=public_key_id)
         self.issuer = str(issuer)
