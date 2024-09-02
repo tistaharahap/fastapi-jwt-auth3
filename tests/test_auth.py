@@ -6,7 +6,7 @@ import pytest
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 from fastapi_jwt_auth3.errors import JWTEncodeError, JWTDecodeError
-from fastapi_jwt_auth3.jwtauth import generate_jwt_token, verify_token, generate_jwk_set
+from fastapi_jwt_auth3.jwtauth import generate_jwt_token, verify_token, generate_jwk_set, FastAPIJWTAuth
 from fastapi_jwt_auth3.models import JWTHeader, JWTPresetClaims
 
 
@@ -68,6 +68,11 @@ def test_jwt_auth_rsa_algos(rsa_public_private_keypair: Tuple[str, str, str]):
         assert verified.get("iat") is not None
         assert verified.get("jti") is not None
 
+        headers = FastAPIJWTAuth.get_unverified_header(token=token)
+
+        assert headers.get("kid") is not None
+        assert headers.get("kid") == header.kid
+
 
 def test_jwt_auth_with_predefined_projection(rsa_public_private_keypair: Tuple[str, str, str]):
     private_key, public_key, _ = rsa_public_private_keypair
@@ -115,6 +120,11 @@ def test_jwt_auth_with_predefined_projection(rsa_public_private_keypair: Tuple[s
         assert verified.iat is not None
         assert verified.jti is not None
 
+        headers = FastAPIJWTAuth.get_unverified_header(token=token)
+
+        assert headers.get("kid") is not None
+        assert headers.get("kid") == header.kid
+
 
 def test_jwt_auth_hmac(jwt_secret_key: str):
     hmac_algos = {"HS256", "HS384", "HS512"}
@@ -123,6 +133,7 @@ def test_jwt_auth_hmac(jwt_secret_key: str):
         header = JWTHeader(
             alg=_algo,
             typ="JWT",
+            kid="test",
         )
         expiry = int((datetime.now() + timedelta(days=1)).timestamp())
         preset_claims = JWTPresetClaims(
@@ -157,6 +168,11 @@ def test_jwt_auth_hmac(jwt_secret_key: str):
         assert verified.get("exp") == expiry
         assert verified.get("iat") is not None
         assert verified.get("jti") is not None
+
+        headers = FastAPIJWTAuth.get_unverified_header(token=token)
+
+        assert headers.get("kid") is not None
+        assert headers.get("kid") == header.kid
 
 
 def test_jwt_auth_ecdsa_algos(
@@ -206,6 +222,11 @@ def test_jwt_auth_ecdsa_algos(
         assert verified.get("iat") is not None
         assert verified.get("jti") is not None
 
+        headers = FastAPIJWTAuth.get_unverified_header(token=token)
+
+        assert headers.get("kid") is not None
+        assert headers.get("kid") == header.kid
+
     private_key, public_key = es256k_public_private_keypair
 
     header = JWTHeader(
@@ -247,6 +268,11 @@ def test_jwt_auth_ecdsa_algos(
     assert verified.get("exp") == expiry
     assert verified.get("iat") is not None
     assert verified.get("jti") is not None
+
+    headers = FastAPIJWTAuth.get_unverified_header(token=token)
+
+    assert headers.get("kid") is not None
+    assert headers.get("kid") == header.kid
 
 
 def test_jwt_auth_eddsa_algo(eddsa_public_private_keypair: Tuple[str, str]):
@@ -291,6 +317,11 @@ def test_jwt_auth_eddsa_algo(eddsa_public_private_keypair: Tuple[str, str]):
     assert verified.get("exp") == expiry
     assert verified.get("iat") is not None
     assert verified.get("jti") is not None
+
+    headers = FastAPIJWTAuth.get_unverified_header(token=token)
+
+    assert headers.get("kid") is not None
+    assert headers.get("kid") == header.kid
 
 
 def test_encoding_errors(eddsa_public_private_keypair: Tuple[str, str]):
@@ -354,3 +385,8 @@ def test_decoding_errors(eddsa_public_private_keypair: Tuple[str, str]):
 def test_generating_jwk_with_empty_list():
     with pytest.raises(ValueError):
         generate_jwk_set(jwt_auths=[])
+
+
+def test_unverified_header_with_invalid_token():
+    with pytest.raises(JWTDecodeError):
+        FastAPIJWTAuth.get_unverified_header(token="invalid")

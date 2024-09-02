@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Literal, Annotated, ClassVar, Set
 
 import pytz
-from pydantic import BaseModel, ConfigDict, field_validator, HttpUrl
+from pydantic import BaseModel, ConfigDict, field_validator, HttpUrl, field_serializer
 from typing_extensions import Doc, Union, Optional
 
 
@@ -80,6 +80,10 @@ class JWTHeader(BaseModel):
             algorithms but required for asymmetric algorithms.
         """),
     ] = None
+
+    @field_serializer("jku")
+    def serialize_jku(self, v: Optional[HttpUrl], _info) -> str:
+        return str(v) if v else ""
 
     @classmethod
     def factory(

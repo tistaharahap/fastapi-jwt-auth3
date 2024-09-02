@@ -77,7 +77,7 @@ def generate_jwt_token(
         claims["jti"] = str(uuid.uuid4())
 
     try:
-        token = jwt.encode(payload=claims, key=secret_key, algorithm=header.alg)
+        token = jwt.encode(payload=claims, key=secret_key, headers=header.model_dump())
     except TypeError:
         raise JWTEncodeError("Invalid claims, must be a JSON serializable object")
     except jwt.InvalidKeyError:
@@ -424,6 +424,24 @@ class FastAPIJWTAuth:
             raise HTTPException(status_code=401, detail="Invalid token")
 
         return verified
+
+    @staticmethod
+    def get_unverified_header(token: str) -> Dict[str, Any]:
+        """
+        Get the unverified header of a JWT token.
+
+        Parameters:
+        token (str): The JWT token.
+
+        Returns:
+        Dict[str, Any]: The unverified header of the JWT token.
+        """
+        try:
+            header = jwt.get_unverified_header(token)
+        except jwt.PyJWTError as exc:
+            raise JWTDecodeError(f"Error decoding JWT token: {exc}")
+
+        return header
 
     def __call__(
         self, creds: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
