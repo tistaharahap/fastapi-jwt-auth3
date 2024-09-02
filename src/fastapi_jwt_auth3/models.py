@@ -82,8 +82,8 @@ class JWTHeader(BaseModel):
     ] = None
 
     @field_serializer("jku")
-    def serialize_jku(self, v: Optional[HttpUrl], _info) -> str:
-        return str(v).rstrip("/") if v else ""
+    def serialize_jku(self, v: Optional[HttpUrl], _info) -> Optional[str]:
+        return str(v) if v else None
 
     @classmethod
     def factory(
@@ -94,7 +94,8 @@ class JWTHeader(BaseModel):
         x509_url: Optional[HttpUrl] = None,
         x509_thumbprint: Optional[str] = None,
     ) -> "JWTHeader":
-        jwks_url = f"{base_url}/.well-known/jwks.json" if base_url else None
+        # Python 3.9 does not add the trailing slash to the URL but 3.12 does, normalize the URL.
+        jwks_url = f"{str(base_url).rstrip('/')}/.well-known/jwks.json" if base_url else None
         return cls(alg=algorithm, typ="JWT", kid=public_key_id, jku=jwks_url, x5t=x509_url, x5u=x509_thumbprint)
 
 
