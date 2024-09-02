@@ -29,6 +29,14 @@ async def test_webserver_auth(client: AsyncClient, jwt_auth: Tuple[FastAPIJWTAut
     assert access_token is not None
     assert refresh_token is not None
 
+    jwt_headers = auth.get_unverified_header(token=access_token)
+
+    assert jwt_headers.get("alg") == auth.header.alg
+    assert jwt_headers.get("typ") == auth.header.typ
+    assert jwt_headers.get("kid") == auth.header.kid
+    assert jwt_headers.get("jku") == str(auth.header.jku)
+    assert jwt_headers.get("jku") == "http://testapi/.well-known/jwks.json"
+
     verified_access_token = verify_token(
         token=access_token,
         key=auth.secret_key if auth.header.alg in ["HS256", "HS384", "HS512"] else auth.public_key,
@@ -57,6 +65,14 @@ async def test_webserver_auth(client: AsyncClient, jwt_auth: Tuple[FastAPIJWTAut
         leeway=auth.leeway,
         project_to=None,
     )
+
+    refresh_token_headers = auth.get_unverified_header(token=access_token)
+
+    assert refresh_token_headers.get("alg") == auth.header.alg
+    assert refresh_token_headers.get("typ") == auth.header.typ
+    assert refresh_token_headers.get("kid") == auth.header.kid
+    assert refresh_token_headers.get("jku") == str(auth.header.jku)
+    assert refresh_token_headers.get("jku") == "http://testapi/.well-known/jwks.json"
 
     assert verified_refresh_token.get("iss") == auth.issuer
     assert verified_refresh_token.get("aud") == auth.audience

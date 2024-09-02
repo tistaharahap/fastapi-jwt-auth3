@@ -1,7 +1,7 @@
 [project]
 name = "fastapi-jwt-auth3"
-version = "0.3.2"
-description = "JWT authentication in FastAPI with ease "
+version = "0.3.3"
+description = "JWT authentication in FastAPI with ease"
 authors = [
     { name = "Batista Harahap", email = "batista@bango29.com" }
 ]

@@ -83,7 +83,7 @@ class JWTHeader(BaseModel):
 
     @field_serializer("jku")
     def serialize_jku(self, v: Optional[HttpUrl], _info) -> str:
-        return str(v) if v else ""
+        return str(v).rstrip("/") if v else ""
 
     @classmethod
     def factory(
