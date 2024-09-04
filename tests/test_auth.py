@@ -46,7 +46,16 @@ def test_jwt_auth_rsa_algos(rsa_public_private_keypair: Tuple[str, str, str]):
             "email": "batista@bango29.com",
         }
 
-        token = generate_jwt_token(header=header, preset_claims=preset_claims, secret_key=private_key, claims=claims)
+        token, header_dict, claims_dict = generate_jwt_token(
+            header=header, preset_claims=preset_claims, secret_key=private_key, claims=claims, return_as_tuple=True
+        )
+
+        assert header_dict.get("alg") == header.alg
+        assert header_dict.get("typ") == header.typ
+        assert header_dict.get("kid") == header.kid
+        assert header_dict.get("jku") == str(header.jku)
+        assert claims_dict.get("name") == claims.get("name")
+        assert claims_dict.get("email") == claims.get("email")
 
         assert isinstance(token, str)
 
