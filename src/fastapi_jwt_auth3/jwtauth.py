@@ -55,7 +55,14 @@ def generate_jwt_token(
             The custom claims of the JWT token. These are additional claims that you want to add to the token.
         """),
     ] = None,
-) -> str:
+    return_as_tuple: Annotated[
+        Optional[bool],
+        Doc("""
+            Whether to return as a Tuple or the token string itself. Defaults to False. This is a boolean value.
+            The Tuple contains the token string, the header as a dictionary, and the claims as a dictionary.
+        """),
+    ] = False,
+) -> Union[str, Tuple[str, Dict[str, Any], Dict[str, Any]]]:
     """
     Generate a JWT token.
 
@@ -83,7 +90,10 @@ def generate_jwt_token(
     except jwt.InvalidKeyError:
         raise JWTEncodeError("Invalid secret key")
 
-    return token
+    if not return_as_tuple:
+        return token
+
+    return token, header.model_dump(), claims
 
 
 def verify_token(
