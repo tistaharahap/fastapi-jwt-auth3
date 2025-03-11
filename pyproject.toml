@@ -1,13 +1,13 @@
 [project]
 name = "fastapi-jwt-auth3"
-version = "0.3.5"
+version = "0.4.0"
 description = "JWT authentication in FastAPI with ease"
 authors = [
     { name = "Batista Harahap", email = "batista@bango29.com" }
 ]
 dependencies = [
     "fastapi>=0.111.0",
-    "pydantic>=2.7.3",
+    "pydantic>=1.10.0,!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*",
     "pyjwt>=2.8.0",
     "jwcrypto>=1.5.6",
     "pytz>=2024.1",

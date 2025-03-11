@@ -20,9 +20,9 @@ from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurve
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwcrypto import jwk
-from pydantic import BaseModel, ConfigDict
 from typing_extensions import Doc, Type
 
+from fastapi_jwt_auth3.compat import BaseModel, configure_model, model_dump, model_validate
 from fastapi_jwt_auth3.errors import JWTEncodeError, JWTDecodeError
 from fastapi_jwt_auth3.models import JWTHeader, JWTPresetClaims
 
@@ -30,53 +30,16 @@ PydanticIsh = TypeVar("PydanticIsh", bound=BaseModel)
 
 
 def generate_jwt_token(
-    header: Annotated[
-        JWTHeader,
-        Doc("""
-            The header of the JWT token. This is an instance of the `JWTHeader` class.
-        """),
-    ],
-    preset_claims: Annotated[
-        JWTPresetClaims,
-        Doc("""
-            The preset claims of the JWT token. This is an instance of the `JWTPresetClaims` class.
-        """),
-    ],
-    secret_key: Annotated[
-        str,
-        Doc("""
-            The secret key used to sign the JWT token. For asymmetric algorithms this is the private key portion. This 
-            is a string value.
-        """),
-    ],
-    claims: Annotated[
-        Optional[Dict[str, Any]],
-        Doc("""
-            The custom claims of the JWT token. These are additional claims that you want to add to the token.
-        """),
-    ] = None,
-    return_as_tuple: Annotated[
-        Optional[bool],
-        Doc("""
-            Whether to return as a Tuple or the token string itself. Defaults to False. This is a boolean value.
-            The Tuple contains the token string, the header as a dictionary, and the claims as a dictionary.
-        """),
-    ] = False,
+    header: Annotated[JWTHeader, Doc("""The header of the JWT token.""")],
+    preset_claims: Annotated[JWTPresetClaims, Doc("""The preset claims of the JWT token.""")],
+    secret_key: Annotated[str, Doc("""The secret key used to sign the JWT token.""")],
+    claims: Annotated[Optional[Dict[str, Any]], Doc("""The custom claims of the JWT token.""")] = None,
+    return_as_tuple: Annotated[Optional[bool], Doc("""Whether to return as a Tuple or the token string.""")] = False,
 ) -> Union[str, Tuple[str, Dict[str, Any], Dict[str, Any]]]:
-    """
-    Generate a JWT token.
-
-    Parameters:
-    header (JWTHeader): The header of the JWT token.
-    preset_claims (JWTPresetClaims): The preset claims of the JWT token.
-    secret_key (str): The secret key used to sign the JWT token.
-    claims (Dict[str, Any], optional): The custom claims of the JWT token. Defaults to None.
-
-    Returns:
-    str: The JWT token.
-    """
+    """Generate a JWT token."""
     claims = claims if claims is not None else dict()
-    claims.update(preset_claims.model_dump(exclude_none=True, exclude_unset=True))
+    # Use model_dump compatibility function
+    claims.update(model_dump(preset_claims, exclude_none=True, exclude_unset=True))
 
     if not claims.get("iat"):
         claims["iat"] = int(datetime.now(tz=pytz.UTC).timestamp())
@@ -84,7 +47,8 @@ def generate_jwt_token(
         claims["jti"] = str(uuid.uuid4())
 
     try:
-        token = jwt.encode(payload=claims, key=secret_key, headers=header.model_dump())
+        # Use model_dump for header too
+        token = jwt.encode(payload=claims, key=secret_key, headers=model_dump(header))
     except TypeError:
         raise JWTEncodeError("Invalid claims, must be a JSON serializable object")
     except jwt.InvalidKeyError:
@@ -93,7 +57,7 @@ def generate_jwt_token(
     if not return_as_tuple:
         return token
 
-    return token, header.model_dump(), claims
+    return token, model_dump(header), claims
 
 
 def verify_token(
@@ -187,14 +151,13 @@ def verify_token(
         raise JWTDecodeError(f"Error decoding JWT token: {exc}")
 
     if project_to:
-        return project_to(**verified)
+        # Use model_validate compatibility function
+        return model_validate(project_to, verified)
 
     return verified
 
 
 class JWKSKey(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
     kty: Annotated[
         str,
         Doc("""
@@ -243,6 +206,9 @@ class JWKSKey(BaseModel):
             The thumbprint of the X.509 certificate. This is an optional field.
         """),
     ] = None
+
+
+configure_model(JWKSKey, extra="forbid")
 
 
 class JWKSKeysOut(BaseModel):
